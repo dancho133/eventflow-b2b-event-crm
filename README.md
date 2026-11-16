@@ -18,7 +18,56 @@ EVENTFLOW bridges this gap by unifying the entire event-to-revenue lifecycle wit
 
 ---
 
-## 2. Core Features & Capabilities
+## 2. Visual Interface & Application Walkthrough
+
+The platform implements an Apple-inspired minimalist dark enterprise design language (`#090D14` canvas, `#131C29` elevated cards, `#3987F5` primary blue accent) engineered for high information density without visual clutter.
+
+### 📊 Executive BI Dashboard
+Real-time visibility into active event portfolios, attendee conversion waterfalls, UTM acquisition channels, and revenue metrics.
+![Executive Dashboard](docs/screenshots/01-dashboard.png)
+
+---
+
+### 🏢 B2B Event Management & 360° Workspace
+Multi-tab command center per event managing logistics, seat capacity, check-in rosters, follow-up automations, and budget ROI.
+
+| Event Directory & Filters | Event 360° Multi-Tab Workspace |
+| :--- | :--- |
+| ![Events Directory](docs/screenshots/02-events.png) | ![Event Details](docs/screenshots/03-event-details.png) |
+
+---
+
+### 🌐 High-Conversion Public Registration Portal
+Distraction-free, mobile-responsive attendee registration page with real-time field validation, capacity enforcement, and zero-friction CRM account linking.
+![Public Registration Portal](docs/screenshots/04-public-registration.png)
+
+---
+
+### 🤝 B2B CRM, Contact 360° & Visual Deal Pipeline
+Connected CRM engine capturing company hierarchies, full attendee engagement timelines, and drag-and-drop revenue stages.
+
+| Contact & Account Directory | Kanban Opportunity Pipeline |
+| :--- | :--- |
+| ![CRM Contacts](docs/screenshots/06-crm-contacts.png) | ![Kanban Pipeline](docs/screenshots/07-kanban-pipeline.png) |
+
+---
+
+### 🤖 Intelligent AI Copilot & Automated Follow-up Tasks
+Context-aware AI assistant generating hyper-personalized attendee follow-ups, strategy briefs, and meeting summaries with human-in-the-loop review.
+
+| AI Copilot Workspace | Task Management & Follow-up Queue |
+| :--- | :--- |
+| ![AI Copilot](docs/screenshots/10-ai-copilot.png) | ![Task Management](docs/screenshots/08-tasks.png) |
+
+---
+
+### 📈 Closed-Loop BI Analytics & Attribution
+Deep-dive business intelligence attributing pipeline revenue and customer acquisition directly to specific event investments.
+![Closed-Loop Analytics](docs/screenshots/09-analytics.png)
+
+---
+
+## 3. Core Features & Capabilities
 
 ### 🏢 Unified Event Operations
 - **Full Lifecycle Management**: Draft, publish, monitor, and complete in-person, virtual, and hybrid B2B conferences, workshops, and executive summits.
