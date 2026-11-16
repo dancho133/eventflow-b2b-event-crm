@@ -209,7 +209,7 @@ export default function TasksPage() {
           <div className="p-12 text-center text-xs text-[#91A0B5] space-y-2">
             <CheckSquare className="w-8 h-8 text-[#91A0B5] mx-auto opacity-50" />
             <p className="font-semibold text-[#EAF0F8]">No tasks found</p>
-            <p>You're all caught up or no tasks match your filters.</p>
+            <p>You&apos;re all caught up or no tasks match your filters.</p>
           </div>
         ) : (
           filteredTasks.map((task) => {

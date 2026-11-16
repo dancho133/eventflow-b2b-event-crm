@@ -30,7 +30,8 @@ export type AITaskType =
   | 'followup_draft'
   | 'meeting_notes'
   | 'lead_classification'
-  | 'operational_query';
+  | 'operational_query'
+  | 'segment_suggestions';
 
 export interface Workspace {
   id: string;
@@ -71,10 +72,12 @@ export interface Event {
   attendedCount: number;
   bannerUrl?: string | null;
   tags: string[];
+  targetAudience?: string | null;
   budget: number;
   expectedRevenue: number;
   workspaceId: string;
   createdById?: string | null;
+  createdBy?: User | null;
   createdAt: string;
   updatedAt: string;
 

@@ -13,6 +13,15 @@ export async function GET(
         OR: [{ id }, { slug: id }],
       },
       include: {
+        createdBy: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            role: true,
+            avatarUrl: true,
+          },
+        },
         registrations: {
           include: {
             contact: {
@@ -128,6 +137,8 @@ export async function PUT(
     if (body.tags !== undefined) {
       updateData.tags = JSON.stringify(Array.isArray(body.tags) ? body.tags : []);
     }
+    if (body.targetAudience !== undefined) updateData.targetAudience = body.targetAudience;
+    if (body.createdById !== undefined) updateData.createdById = body.createdById;
     if (body.budget !== undefined) updateData.budget = Number(body.budget);
     if (body.expectedRevenue !== undefined) updateData.expectedRevenue = Number(body.expectedRevenue);
 

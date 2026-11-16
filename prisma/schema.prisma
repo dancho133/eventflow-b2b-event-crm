@@ -62,6 +62,7 @@ model Event {
   attendedCount    Int      @default(0)
   bannerUrl        String?
   tags             String   @default("[]") // JSON string array
+  targetAudience   String?
   budget           Float    @default(0.0)
   expectedRevenue  Float    @default(0.0)
   workspaceId      String

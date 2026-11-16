@@ -35,6 +35,7 @@ export default function PublicRegistrationPage() {
   const [submitting, setSubmitting] = useState(false);
   const [successData, setSuccessData] = useState<any | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [consentGiven, setConsentGiven] = useState(false);
 
   const [formData, setFormData] = useState({
     firstName: "",
@@ -55,14 +56,22 @@ export default function PublicRegistrationPage() {
     try {
       setLoading(true);
       // Fetch event by slug from API
-      const res = await fetch(`/api/events?slug=${slug}`);
+      const res = await fetch(`/api/events/${slug}`);
       if (res.ok) {
         const data = await res.json();
-        const found = Array.isArray(data) ? data.find((e: any) => e.slug === slug) : data.event || data;
-        setEvent(found || null);
+        setEvent(data.event || data);
+      } else {
+        const qRes = await fetch(`/api/events?slug=${slug}`);
+        if (qRes.ok) {
+          const qData = await qRes.json();
+          setEvent(qData.event || (Array.isArray(qData.events) ? qData.events[0] : null));
+        } else {
+          setEvent(null);
+        }
       }
     } catch (err) {
       console.error("Failed to fetch event by slug:", err);
+      setEvent(null);
     } finally {
       setLoading(false);
     }
@@ -73,7 +82,12 @@ export default function PublicRegistrationPage() {
     if (!event) return;
 
     if (!formData.firstName.trim() || !formData.lastName.trim() || !formData.email.trim()) {
-      setErrorMessage("Please complete all required fields.");
+      setErrorMessage("Please complete all required fields (First Name, Last Name, and Work Email).");
+      return;
+    }
+
+    if (!consentGiven) {
+      setErrorMessage("Please accept the consent checkbox to process your registration.");
       return;
     }
 
@@ -87,6 +101,8 @@ export default function PublicRegistrationPage() {
         body: JSON.stringify({
           eventId: event.id,
           ...formData,
+          consentGiven: true,
+          consent: true,
           utmSource: "Direct Public Portal",
         }),
       });
@@ -175,7 +191,7 @@ export default function PublicRegistrationPage() {
               <span className="text-xs font-bold text-[#35B982] uppercase tracking-wider">
                 Registration Confirmed
               </span>
-              <h2 className="text-2xl font-bold text-[#EAF0F8] mt-1">You're All Set!</h2>
+              <h2 className="text-2xl font-bold text-[#EAF0F8] mt-1">You&apos;re All Set!</h2>
               <p className="text-xs text-[#91A0B5] mt-1.5">
                 A confirmation calendar invite and digital entry badge have been dispatched to{" "}
                 <span className="text-[#EAF0F8] font-semibold">{formData.email}</span>.
@@ -456,6 +472,23 @@ export default function PublicRegistrationPage() {
                       />
                     </div>
                   </div>
+                </div>
+
+                {/* Consent Checkbox */}
+                <div className="pt-2">
+                  <label className="flex items-start gap-2.5 cursor-pointer select-none group">
+                    <input
+                      type="checkbox"
+                      id="consent-checkbox"
+                      required
+                      checked={consentGiven}
+                      onChange={(e) => setConsentGiven(e.target.checked)}
+                      className="mt-0.5 rounded border-[#263345] bg-[#090D14] text-[#3987F5] focus:ring-[#3987F5] focus:ring-offset-0 focus:ring-1 cursor-pointer w-4 h-4 flex-shrink-0"
+                    />
+                    <span className="text-[11px] text-[#91A0B5] group-hover:text-[#EAF0F8] transition-colors leading-relaxed">
+                      I consent to the processing of my business contact data for this event and related communications. *
+                    </span>
+                  </label>
                 </div>
 
                 {/* Submit Button */}

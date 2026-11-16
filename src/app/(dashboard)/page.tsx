@@ -57,9 +57,10 @@ export default function DashboardPage() {
       const res = await fetch("/api/analytics");
       if (res.ok) {
         const json = await res.json();
-        setData(json);
-        if (json.recentActivities) {
-          setActivities(json.recentActivities);
+        const payload = json.analytics || json;
+        setData(payload);
+        if (json.recentActivities || payload.recentActivities) {
+          setActivities(json.recentActivities || payload.recentActivities);
         }
       }
     } catch (err) {

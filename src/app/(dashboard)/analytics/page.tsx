@@ -60,7 +60,7 @@ export default function AnalyticsPage() {
       const res = await fetch(url);
       if (res.ok) {
         const json = await res.json();
-        setData(json);
+        setData(json.analytics || json);
       }
     } catch (err) {
       console.error("Failed to load analytics:", err);

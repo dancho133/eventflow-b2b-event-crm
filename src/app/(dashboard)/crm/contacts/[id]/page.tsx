@@ -57,11 +57,19 @@ export default function ContactDetailPage() {
       const res = await fetch(`/api/contacts/${contactId}`);
       if (res.ok) {
         const data = await res.json();
-        setContact(data.contact || data);
-        if (data.registrations) setRegistrations(data.registrations);
-        if (data.tasks) setTasks(data.tasks);
-        if (data.opportunities) setOpportunities(data.opportunities);
-        if (data.activities) setActivities(data.activities);
+        const contactObj = data.contact || data;
+        setContact(contactObj);
+        if (contactObj.registrations) setRegistrations(contactObj.registrations);
+        else if (data.registrations) setRegistrations(data.registrations);
+
+        if (contactObj.tasks) setTasks(contactObj.tasks);
+        else if (data.tasks) setTasks(data.tasks);
+
+        if (contactObj.opportunities) setOpportunities(contactObj.opportunities);
+        else if (data.opportunities) setOpportunities(data.opportunities);
+
+        if (contactObj.activities) setActivities(contactObj.activities);
+        else if (data.activities) setActivities(data.activities);
       }
     } catch (err) {
       console.error("Failed to load contact data:", err);

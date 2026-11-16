@@ -1,6 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { processAITask } from '@/lib/ai-service';
+import { processAITask, checkAIKeyConfigured } from '@/lib/ai-service';
 import { AITaskType } from '@/types';
+
+export const dynamic = 'force-dynamic';
+
+export async function GET() {
+  const { hasKey, provider } = checkAIKeyConfigured();
+  return NextResponse.json({
+    success: true,
+    hasKey,
+    provider,
+    isFallback: !hasKey,
+    supportedProviders: ['OpenAI (GPT-4o)', 'Anthropic (Claude 3.5 Sonnet)', 'Google (Gemini 1.5 Pro)'],
+    envVars: ['OPENAI_API_KEY', 'ANTHROPIC_API_KEY', 'GEMINI_API_KEY'],
+  });
+}
 
 export async function POST(request: NextRequest) {
   try {
@@ -13,6 +27,7 @@ export async function POST(request: NextRequest) {
       'meeting_notes',
       'lead_classification',
       'operational_query',
+      'segment_suggestions',
     ];
 
     if (!type || !validTypes.includes(type)) {

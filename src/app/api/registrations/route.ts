@@ -105,6 +105,13 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    if (utmSource === 'Direct Public Portal' && body.consentGiven !== true && body.consent !== true) {
+      return NextResponse.json(
+        { success: false, error: 'Consent to the processing of business contact data is required.' },
+        { status: 400 }
+      );
+    }
+
     // 2. Event existence and capacity check
     const event = await prisma.event.findUnique({
       where: { id: eventId },
@@ -177,10 +184,9 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Find or create contact
+    // Find or create contact - match by email to avoid duplicates
     let contact = await prisma.contact.findFirst({
       where: {
-        workspaceId,
         email: email.toLowerCase(),
       },
     });
@@ -216,11 +222,13 @@ export async function POST(request: NextRequest) {
         },
       });
     } else {
-      // Update missing fields if available
+      // Existing contact found: link registration to existing contact and update company/title if provided
       const updateData: any = {};
-      if (!contact.phone && phone) updateData.phone = phone;
-      if (!contact.title && title) updateData.title = title;
-      if (!contact.companyId && companyId) updateData.companyId = companyId;
+      if (title && title.trim()) updateData.title = title.trim();
+      if (companyId) updateData.companyId = companyId;
+      if (phone && phone.trim() && !contact.phone) updateData.phone = phone.trim();
+      if (firstName && firstName.trim() && !contact.firstName) updateData.firstName = firstName.trim();
+      if (lastName && lastName.trim() && !contact.lastName) updateData.lastName = lastName.trim();
       if (Object.keys(updateData).length > 0) {
         contact = await prisma.contact.update({
           where: { id: contact.id },

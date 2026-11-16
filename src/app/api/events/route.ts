@@ -19,10 +19,15 @@ export async function GET(request: NextRequest) {
     const search = searchParams.get('search') || '';
     const status = searchParams.get('status');
     const type = searchParams.get('type');
+    const slug = searchParams.get('slug');
     const sortBy = searchParams.get('sortBy') || 'startDate';
     const order = searchParams.get('order') || 'asc';
 
     const where: any = {};
+
+    if (slug) {
+      where.slug = slug;
+    }
 
     if (search) {
       where.OR = [
@@ -55,6 +60,15 @@ export async function GET(request: NextRequest) {
       where,
       orderBy,
       include: {
+        createdBy: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            role: true,
+            avatarUrl: true,
+          },
+        },
         _count: {
           select: {
             registrations: true,
@@ -89,7 +103,11 @@ export async function GET(request: NextRequest) {
       };
     });
 
-    return NextResponse.json({ success: true, events: parsedEvents });
+    return NextResponse.json({
+      success: true,
+      events: parsedEvents,
+      event: slug ? parsedEvents[0] || null : undefined,
+    });
   } catch (error: any) {
     console.error('Error fetching events:', error);
     return NextResponse.json({ success: false, error: error.message }, { status: 500 });
@@ -115,6 +133,8 @@ export async function POST(request: NextRequest) {
       capacity = 100,
       bannerUrl,
       tags = [],
+      targetAudience,
+      createdById,
       budget = 0,
       expectedRevenue = 0,
     } = body;
@@ -148,6 +168,8 @@ export async function POST(request: NextRequest) {
         capacity: Number(capacity),
         bannerUrl,
         tags: JSON.stringify(Array.isArray(tags) ? tags : []),
+        targetAudience: targetAudience || null,
+        createdById: createdById || null,
         budget: Number(budget),
         expectedRevenue: Number(expectedRevenue),
         workspaceId,

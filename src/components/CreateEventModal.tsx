@@ -1,18 +1,20 @@
 "use client";
 
-import React, { useState } from "react";
-import { X, Calendar, DollarSign, Users, MapPin, Tag, Loader2 } from "lucide-react";
-import { EventType } from "@/types";
+import React, { useState, useEffect } from "react";
+import { X, Calendar, DollarSign, Users, MapPin, Tag, Loader2, UserCheck, Target } from "lucide-react";
+import { EventType, User } from "@/types";
 
 interface CreateEventModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSuccess?: () => void;
+  initialData?: any;
 }
 
-export function CreateEventModal({ isOpen, onClose, onSuccess }: CreateEventModalProps) {
+export function CreateEventModal({ isOpen, onClose, onSuccess, initialData }: CreateEventModalProps) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [teamMembers, setTeamMembers] = useState<User[]>([]);
 
   const [formData, setFormData] = useState({
     title: "",
@@ -26,10 +28,50 @@ export function CreateEventModal({ isOpen, onClose, onSuccess }: CreateEventModa
     location: "San Francisco Convention Center",
     venueAddress: "747 Howard St, San Francisco, CA 94103",
     virtualUrl: "",
+    targetAudience: "",
+    createdById: "",
     budget: 25000,
     expectedRevenue: 100000,
     tags: "Enterprise, AI, SaaS",
   });
+
+  useEffect(() => {
+    // Fetch users for responsible manager selection
+    fetch("/api/users")
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.users && Array.isArray(data.users)) {
+          setTeamMembers(data.users);
+          if (data.users.length > 0 && !formData.createdById) {
+            setFormData((prev) => ({ ...prev, createdById: prev.createdById || data.users[0].id }));
+          }
+        }
+      })
+      .catch(() => {});
+  }, []);
+
+  useEffect(() => {
+    if (isOpen && initialData) {
+      setFormData((prev) => ({
+        ...prev,
+        title: initialData.title || prev.title,
+        slug: initialData.slug || (initialData.title ? initialData.title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "") : prev.slug),
+        description: initialData.description || prev.description,
+        shortDescription: initialData.shortDescription || prev.shortDescription,
+        eventType: initialData.eventType || prev.eventType,
+        capacity: initialData.capacity !== undefined ? Number(initialData.capacity) : prev.capacity,
+        budget: initialData.budget !== undefined ? Number(initialData.budget) : prev.budget,
+        expectedRevenue: initialData.expectedRevenue !== undefined ? Number(initialData.expectedRevenue) : prev.expectedRevenue,
+        tags: Array.isArray(initialData.tags) ? initialData.tags.join(", ") : (initialData.tags || prev.tags),
+        targetAudience: initialData.targetAudience || prev.targetAudience,
+        createdById: initialData.createdById || prev.createdById,
+        location: initialData.location || prev.location,
+        venueAddress: initialData.venueAddress || prev.venueAddress,
+        startDate: initialData.startDate || prev.startDate,
+        endDate: initialData.endDate || prev.endDate,
+      }));
+    }
+  }, [isOpen, initialData]);
 
   if (!isOpen) return null;
 
@@ -270,6 +312,43 @@ export function CreateEventModal({ isOpen, onClose, onSuccess }: CreateEventModa
                   onChange={(e) => setFormData({ ...formData, expectedRevenue: Number(e.target.value) })}
                   className="w-full bg-[#090D14] border border-[#263345] rounded-lg pl-9 pr-3 py-2 text-xs text-[#EAF0F8] focus:outline-none focus:border-[#3987F5]"
                 />
+              </div>
+            </div>
+
+            <div className="md:col-span-2">
+              <label className="block text-xs font-semibold text-[#91A0B5] mb-1.5">
+                Target Audience
+              </label>
+              <div className="relative">
+                <Target className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-[#91A0B5]" />
+                <input
+                  type="text"
+                  value={formData.targetAudience}
+                  onChange={(e) => setFormData({ ...formData, targetAudience: e.target.value })}
+                  placeholder="e.g. Enterprise IT Directors, VP of Security, Head of Infrastructure"
+                  className="w-full bg-[#090D14] border border-[#263345] rounded-lg pl-9 pr-3 py-2 text-xs text-[#EAF0F8] focus:outline-none focus:border-[#3987F5]"
+                />
+              </div>
+            </div>
+
+            <div className="md:col-span-2">
+              <label className="block text-xs font-semibold text-[#91A0B5] mb-1.5">
+                Responsible Team Member / Manager
+              </label>
+              <div className="relative">
+                <UserCheck className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-[#91A0B5]" />
+                <select
+                  value={formData.createdById}
+                  onChange={(e) => setFormData({ ...formData, createdById: e.target.value })}
+                  className="w-full bg-[#090D14] border border-[#263345] rounded-lg pl-9 pr-3 py-2 text-xs text-[#EAF0F8] focus:outline-none focus:border-[#3987F5]"
+                >
+                  <option value="">Select Responsible Manager...</option>
+                  {teamMembers.map((member) => (
+                    <option key={member.id} value={member.id}>
+                      {member.name} ({member.role})
+                    </option>
+                  ))}
+                </select>
               </div>
             </div>
 

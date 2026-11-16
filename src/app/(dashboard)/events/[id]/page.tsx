@@ -77,10 +77,16 @@ export default function EventDetailPage() {
       const res = await fetch(`/api/events/${eventId}`);
       if (res.ok) {
         const data = await res.json();
-        setEvent(data.event || data);
-        if (data.registrations) setRegistrations(data.registrations);
-        if (data.tasks) setTasks(data.tasks);
-        if (data.activities) setActivities(data.activities);
+        const eventObj = data.event || data;
+        setEvent(eventObj);
+        if (eventObj.registrations) setRegistrations(eventObj.registrations);
+        else if (data.registrations) setRegistrations(data.registrations);
+
+        if (eventObj.tasks) setTasks(eventObj.tasks);
+        else if (data.tasks) setTasks(data.tasks);
+
+        if (eventObj.activities) setActivities(eventObj.activities);
+        else if (data.activities) setActivities(data.activities);
       } else {
         // Fallback fetch registrations directly if not embedded
         fetch(`/api/registrations?eventId=${eventId}`)
@@ -671,7 +677,7 @@ export default function EventDetailPage() {
           <div className="bg-[#131C29] border border-[#263345] rounded-xl overflow-hidden shadow-card">
             {tasks.length === 0 ? (
               <div className="p-8 text-center text-xs text-[#91A0B5]">
-                No follow-up tasks recorded yet for this event. Click "New Task" to create one.
+                No follow-up tasks recorded yet for this event. Click &quot;New Task&quot; to create one.
               </div>
             ) : (
               <div className="divide-y divide-[#263345]">

@@ -110,6 +110,12 @@ export function TopNav({
 
       {/* Right Controls */}
       <div className="flex items-center gap-3">
+        {/* Demo Environment Badge */}
+        <div className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#E8B45E]/10 border border-[#E8B45E]/30 text-[#E8B45E] text-[11px] font-medium select-none shadow-sm">
+          <span className="w-1.5 h-1.5 rounded-full bg-[#E8B45E] animate-pulse" />
+          <span>Demo Environment</span>
+        </div>
+
         {/* Workspace Dropdown */}
         <div className="relative">
           <button

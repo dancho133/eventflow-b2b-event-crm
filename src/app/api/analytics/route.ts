@@ -210,6 +210,16 @@ export async function GET(request: NextRequest) {
       completionRate: tasks.length > 0 ? Math.round((tasks.filter((t) => t.status === 'Completed').length / tasks.length) * 100) : 0,
     };
 
+    // 9. Recent Activities
+    const recentActivities = await prisma.activity.findMany({
+      take: 10,
+      orderBy: { createdAt: 'desc' },
+      include: {
+        event: { select: { title: true } },
+        contact: { select: { firstName: true, lastName: true } },
+      },
+    });
+
     return NextResponse.json({
       success: true,
       analytics: {
@@ -221,7 +231,9 @@ export async function GET(request: NextRequest) {
         leadStatusDistribution,
         industryBreakdown,
         followUpStatus,
+        recentActivities,
       },
+      recentActivities,
     });
   } catch (error: any) {
     console.error('Error fetching analytics:', error);
