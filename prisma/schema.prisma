@@ -1,0 +1,226 @@
+// Prisma schema for EVENTFLOW
+// Provider: SQLite
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model Workspace {
+  id        String   @id @default(cuid())
+  name      String
+  slug      String   @unique
+  domain    String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  users         User[]
+  events        Event[]
+  companies     Company[]
+  contacts      Contact[]
+  tasks         Task[]
+  opportunities Opportunity[]
+  activities    Activity[]
+}
+
+model User {
+  id          String   @id @default(cuid())
+  name        String
+  email       String   @unique
+  role        String   @default("ORGANIZER") // ADMIN, ORGANIZER, STAFF, VIEWER
+  avatarUrl   String?
+  workspaceId String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  eventsCreated Event[]
+  tasksAssigned Task[]
+  activities   Activity[]
+}
+
+model Event {
+  id               String   @id @default(cuid())
+  title            String
+  slug             String   @unique
+  description      String
+  shortDescription String?
+  eventType        String   @default("Conference") // Conference, Webinar, Workshop, Networking, Summit, Hybrid
+  status           String   @default("Draft")      // Draft, Published, Completed, Cancelled
+  startDate        DateTime
+  endDate          DateTime
+  timezone         String   @default("America/New_York")
+  location         String?
+  venueAddress     String?
+  virtualUrl       String?
+  capacity         Int      @default(100)
+  registeredCount  Int      @default(0)
+  attendedCount    Int      @default(0)
+  bannerUrl        String?
+  tags             String   @default("[]") // JSON string array
+  budget           Float    @default(0.0)
+  expectedRevenue  Float    @default(0.0)
+  workspaceId      String
+  createdById      String?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  workspace     Workspace      @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  createdBy     User?          @relation(fields: [createdById], references: [id], onDelete: SetNull)
+  registrations Registration[]
+  tasks         Task[]
+  opportunities Opportunity[]
+  activities    Activity[]
+  aiInteractions AIInteraction[]
+}
+
+model Company {
+  id           String   @id @default(cuid())
+  name         String
+  domain       String?
+  industry     String   @default("Technology")
+  size         String   @default("51-200") // 1-10, 11-50, 51-200, 201-500, 500+
+  tier         String   @default("Mid-Market") // Enterprise, Mid-Market, SMB, Startup
+  logoUrl      String?
+  website      String?
+  headquarters String?
+  workspaceId  String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  workspace     Workspace     @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  contacts      Contact[]
+  opportunities Opportunity[]
+}
+
+model Contact {
+  id          String   @id @default(cuid())
+  firstName   String
+  lastName    String
+  email       String   @unique
+  phone       String?
+  title       String?
+  companyId   String?
+  leadScore   Int      @default(50)
+  leadStatus  String   @default("New") // New, Contacted, Qualified, Nurturing, Customer, Inactive
+  tags        String   @default("[]")  // JSON string array
+  city        String?
+  country     String?
+  avatarUrl   String?
+  bio         String?
+  linkedinUrl String?
+  workspaceId String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  workspace     Workspace       @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  company       Company?        @relation(fields: [companyId], references: [id], onDelete: SetNull)
+  registrations Registration[]
+  opportunities Opportunity[]
+  tasks         Task[]
+  activities    Activity[]
+  aiInteractions AIInteraction[]
+}
+
+model Registration {
+  id            String    @id @default(cuid())
+  eventId       String
+  contactId     String
+  ticketType    String    @default("General") // General, VIP, Speaker, Sponsor, Press
+  status        String    @default("Registered") // Registered, Confirmed, Attended, No-show, Cancelled
+  utmSource     String    @default("Direct")     // LinkedIn, Direct, Email, Partner, Google, etc.
+  utmMedium     String?
+  utmCampaign   String?
+  checkInTime   DateTime?
+  notes         String?
+  customAnswers String?   @default("{}") // JSON string
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  event   Event   @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  contact Contact @relation(fields: [contactId], references: [id], onDelete: Cascade)
+
+  @@unique([eventId, contactId])
+}
+
+model Task {
+  id           String    @id @default(cuid())
+  title        String
+  description  String?
+  dueDate      DateTime?
+  priority     String    @default("Medium") // Low, Medium, High, Urgent
+  status       String    @default("Pending") // Pending, In_Progress, Completed, Cancelled
+  contactId    String?
+  eventId      String?
+  assignedToId String?
+  workspaceId  String
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  workspace  Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  contact    Contact?  @relation(fields: [contactId], references: [id], onDelete: SetNull)
+  event      Event?    @relation(fields: [eventId], references: [id], onDelete: SetNull)
+  assignedTo User?     @relation(fields: [assignedToId], references: [id], onDelete: SetNull)
+}
+
+model Opportunity {
+  id          String    @id @default(cuid())
+  title       String
+  value       Float     @default(0.0)
+  stage       String    @default("Discovery") // Discovery, Qualified, Proposal, Negotiation, Won, Lost
+  probability Int       @default(20)
+  closeDate   DateTime?
+  companyId   String?
+  contactId   String?
+  eventId     String?
+  notes       String?
+  workspaceId String
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  workspace  Workspace  @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  company    Company?   @relation(fields: [companyId], references: [id], onDelete: SetNull)
+  contact    Contact?   @relation(fields: [contactId], references: [id], onDelete: SetNull)
+  event      Event?     @relation(fields: [eventId], references: [id], onDelete: SetNull)
+  activities Activity[]
+}
+
+model Activity {
+  id            String   @id @default(cuid())
+  type          String   // REGISTRATION_CREATED, STATUS_CHANGED, CHECK_IN, NOTE_ADDED, TASK_COMPLETED, OPPORTUNITY_STAGE_CHANGED, EMAIL_SENT, MEETING_LOGGED, AI_INSIGHT_GENERATED
+  title         String
+  description   String
+  metadata      String?  @default("{}") // JSON string
+  contactId     String?
+  eventId       String?
+  opportunityId String?
+  userId        String?
+  workspaceId   String
+  createdAt     DateTime @default(now())
+
+  workspace   Workspace    @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  contact     Contact?     @relation(fields: [contactId], references: [id], onDelete: SetNull)
+  event       Event?       @relation(fields: [eventId], references: [id], onDelete: SetNull)
+  opportunity Opportunity? @relation(fields: [opportunityId], references: [id], onDelete: SetNull)
+  user        User?        @relation(fields: [userId], references: [id], onDelete: SetNull)
+}
+
+model AIInteraction {
+  id          String   @id @default(cuid())
+  type        String   // event_brief, followup_draft, meeting_notes, lead_classification, operational_query
+  prompt      String
+  response    String
+  tokensUsed  Int?     @default(0)
+  model       String   @default("gemini-1.5-pro")
+  metadata    String?  @default("{}") // JSON string
+  eventId     String?
+  contactId   String?
+  createdAt   DateTime @default(now())
+
+  event   Event?   @relation(fields: [eventId], references: [id], onDelete: SetNull)
+  contact Contact? @relation(fields: [contactId], references: [id], onDelete: SetNull)
+}
